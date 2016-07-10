@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<style>
+
+    .node circle {
+        cursor: pointer;
+        /*stroke: #3182bd;*/
+        stroke: black;
+        stroke-width: 1.5px;
+    }
+
+    .node text {
+        font: 10px sans-serif;
+        pointer-events: none;
+        text-anchor: middle;
+        color: white;
+    }
+
+    line.link {
+        fill: none;
+        /*stroke: #9ecae1;*/
+        stroke-width: 1.5px;
+        stroke: black;
+    }
+
+    #tooltip {
+        position: absolute;
+        width: 200px;
+        height: auto;
+        padding: 10px;
+        background-color: white;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+        border-radius: 10px;
+        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+    }
+
+    #tooltip.hidden {
+        display: none;
+    }
+
+    #tooltip p {
+        margin: 0;
+        font-family: sans-serif;
+        font-size: 16px;
+        line-height: 20px;
+    }
+</style>
+
+<body>
+
+
+
+
+<div id="tooltip" class="hidden">
+    <p><strong>Information For User</strong></p>
+    <p><span id="sns"></span></p>
+
+
+</div>
+
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.2.min.js"></script>
+<script src="d3/d3.min.js"></script>
+<script src="d3/jquery.tipsy.js"></script>
+<script>
+
+    var width = 1000,
+            height = 800,
+            nodeEnter,
+            root;
+
+    var force = d3.layout.force()
+            .linkDistance(80)
+            .charge(-300)
+            .gravity(.05)
+            .size([width, height])
+            .on("tick", tick);
+
+    var svg = d3.select("body").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+    var link = svg.selectAll(".link"),
+            node = svg.selectAll(".node");
+
+
+    //    var tooltip = d3.select(this)
+    //            .append('div')
+    //            .attr('class','tooltip');
+    //
+    //        tooltip.append('div')
+    //                .attr('class','sns')
+
+
+
+
+    d3.json("static/graph_test.json", function(error, json) {
+//        if (error) throw error;
+        console.log(json);
+        root = json;
+        update();
+    });
+
+    function update() {
+        var nodes = flatten(root),
+                links = d3.layout.tree().links(nodes);
+
+        // Restart the force layout.
+        force
+                .nodes(nodes)
+                .links(links)
+                .start();
+
+        // Update links.
+        link = link.data(links, function(d) { return d.target.id; });
+
+        link.exit().remove();
+
+        link.enter().insert("line", ".node")
+                .attr("class", "link");
+
+        // Update nodes.
+        node = node.data(nodes, function(d) { return d.id; });
+
+        node.exit().remove();
+
+        nodeEnter = node.enter().append("g")
+                .attr("class", "node")
+                .on("click", click)
+                .call(force.drag)
+                .on("mouseover",show_info)
+                .on("mouseout", function() {
+
+//Hide the tooltip
+                    d3.select("#tooltip").classed("hidden", true);
+
+                })
+
+        nodeEnter.append("circle")
+                .attr("r", function(d) { return Math.sqrt(d.size) / 3 || 40; })
+
+        nodeEnter.append("text")
+                .attr("dy", ".25em")
+                .text(function(d) { return d.sns; });
+        node.select("circle")
+                .style("fill", color);
+
+
+    }
+
+    function show_info(d){
+//Update the tooltip position and value
+        d3.select("#tooltip")
+                .style("left", d.x + "px")
+                .style("top", d.y + "px")
+                .select("#sns")
+                .text("name : "+d.name)
+                .append("p").html("sns : "+d.sns)
+                .append("p").html("twitter_count : "+ d.share_twitter)
+                .append("p").html("facebook_count : "+ d.share_facebook)
+                .append("p").html("kakao_count : "+ d.share_kakao)
+                .append("p").html("direct_children : "+ d.share_count_direct)
+                .append("p").html("all_children : "+ d.share_count_all)
+                .append("p").html("shared time : "+ d.share_time)
+//Show the tooltip
+        d3.select("#tooltip").classed("hidden", false);
+
+    }
+
+
+
+    function tick() {
+        link.attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+
+        node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+    }
+
+    function color(d) {
+        if(d.sns == "facebook"){
+            return "DodgerBlue "
+        }
+        else if(d.sns == "kakao"){
+            return "Gold"
+        }
+        else if(d.sns == "twitter")
+        {
+            return "LightSkyBlue"
+        }
+        else{
+            return "white"
+        }
+//        return d._children ? "blue" // collapsed package
+//                : d.children ? "red" // expanded package
+//                : "yellow"; // leaf node
+    }
+
+
+    // Toggle children on click.
+    function click(d) {
+        if (d3.event.defaultPrevented) return; // ignore drag
+        if (d.children) {
+
+            d._children = d.children;
+            d.children = null;
+
+
+        } else {
+            d.children = d._children;
+            d._children = null;
+        }
+        update();
+    }
+
+    // Returns a list of all nodes under the root.
+    function flatten(root) {
+        var nodes = [], i = 0;
+
+        function recurse(node) {
+            if (node.children) node.size = node.children.reduce(function(p, v) { return p - 1000 + recurse(v); }, 0);
+            if (!node.id) node.id = ++i;
+            nodes.push(node);
+            return node.size;
+        }
+
+        root.size = recurse(root);
+        return nodes;
+    }
+
+    function get_children(d){
+
+    }
+    function get_children_all(d){
+
+    }
+
+</script>

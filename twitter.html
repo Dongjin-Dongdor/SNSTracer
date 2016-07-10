@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+
+    <title></title>
+</head>
+
+
+
+<script>
+    var access_token_twitter
+    var access_token_facebook
+    var access_token_kakao
+    var screen_name_twitter
+    var screen_name_facebook
+    var screen_name_kakao
+    var random_character = '{{random_character}}'
+    var session = '{{session_id}}'
+    var random_children
+    var referer = document.referrer
+
+
+    function readCookie(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0;i < ca.length;i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        }
+        return null;
+    }
+
+
+    function init(){
+       // var session = readCookie('beaker.session.id')
+        var check = '{{checker}}'
+
+        if (check == 1){
+            alert('twitter callback')
+            screen_name_twitter = '{{screen_name_twitter}}'
+            access_token_twitter = '{{access_token_regular_twitter}}'
+            var access_token_secret_twitter = '{{access_token_secret_twitter}}'
+            access_token_facebook = '{{access_token_regular_facebook}}'
+            access_token_kakao = '{{access_token_regular_kakao}}'
+
+            $('input#access_token_twitter').attr('value',access_token_twitter)
+            $('input#access_token_secret_twitter').attr('value',access_token_secret_twitter)
+            $('input#access_token_facebook').attr('value',access_token_facebook)
+            $('input#access_token_kakao').attr('value',access_token_kakao)
+            $('#screen_name').attr('value',screen_name_twitter)
+            var replace_url = '/#.'+ '{{random_character}}'
+            console.log(replace_url)
+            window.history.replaceState({},'test',replace_url)
+        }
+
+        else if(check == 2){
+            alert('facebook callback')
+            screen_name_facebook = '{{screen_name_facebook}}'
+            access_token_twitter = '{{access_token_regular_twitter}}'
+            var access_token_secret_twitter = '{{access_token_secret_twitter}}'
+            access_token_facebook = '{{access_token_regular_facebook}}'
+            access_token_kakao = '{{access_token_regular_kakao}}'
+
+            $('input#access_token_twitter').attr('value',access_token_twitter)
+            $('input#access_token_secret_twitter').attr('value',access_token_secret_twitter)
+            $('input#access_token_facebook').attr('value',access_token_facebook)
+            $('input#access_token_kakao').attr('value',access_token_kakao)
+            $('#screen_name').attr('value',screen_name_facebook)
+            var replace_url = '/#.'+ '{{random_character}}'
+            console.log(replace_url)
+            window.history.replaceState({},'test',replace_url)
+        }
+
+        else if(check == 3){
+            alert('kakao callback')
+            screen_name_kakao = '{{screen_name_kakao}}'
+            access_token_twitter = '{{access_token_regular_twitter}}'
+            var access_token_secret_twitter = '{{access_token_secret_twitter}}'
+
+            access_token_facebook = '{{access_token_regular_facebook}}'
+            access_token_kakao = '{{access_token_regular_kakao}}'
+            $('input#access_token_twitter').attr('value',access_token_twitter)
+            $('input#access_token_secret_twitter').attr('value',access_token_secret_twitter)
+            $('input#access_token_facebook').attr('value',access_token_facebook)
+            $('input#access_token_kakao').attr('value',access_token_kakao)
+            $('#screen_name').attr('value',screen_name_kakao)
+            var replace_url = '/#.'+'{{random_character}}'
+            console.log(replace_url)
+            window.history.replaceState({},'test',replace_url)
+        }
+        else
+        {
+            var trick_session = '{{session_id}}'
+            var current_url = document.location.href;
+
+            referer = document.referrer;
+            random_children = '{{random_character}}'
+
+            if(current_url.match("#\\.")){
+                var parent_sign = current_url.split("#.")
+                var parent = parent_sign[1]
+
+                $.ajax({
+                    type:"POST",
+                    url : "/url_sharer_children",
+                    data :{
+                        'parent':parent,
+                        'children':random_children,
+                        'session_id':trick_session,
+                        'sns' : referer
+                    }
+                })
+            }
+            else{
+            }
+
+            var replace_url = '/#.'+ random_children
+            console.log(replace_url)
+            window.history.replaceState({},'test',replace_url)
+
+
+
+            var ourURL = 'http://127.0.0.1:8011/start/'+'{{random_character}}'
+            access_token_twitter = '{{access_token_regular_twitter}}'
+           // $('textarea#opinion').attr('value',ourURL)
+            var access_token_secret_twitter = '{{access_token_secret_twitter}}'
+            access_token_facebook = '{{access_token_regular_facebook}}'
+            access_token_kakao = '{{access_token_regular_kakao}}'
+
+            var screen_name = '{{screen_name}}'
+            console.log(access_token_twitter+'twitter')
+            console.log(access_token_facebook+'facebook')
+            console.log(access_token_kakao+'kakao')
+            $('input#access_token_twitter').attr('value',access_token_twitter)
+            $('input#access_token_secret_twitter').attr('value',access_token_secret_twitter)
+            $('input#access_token_facebook').attr('value',access_token_facebook)
+            $('input#access_token_kakao').attr('value',access_token_kakao)
+            $('#screen_name').attr('value',screen_name)
+
+        }
+            };
+
+    function openURLTwitter(targetURL) {
+       // var session = readCookie('beaker.session.id');
+        console.log($('input#access_token_twitter').val()+'   twitter!!!!')
+        if ($('input#access_token_twitter').val() != '')
+        {
+            $('#screen_name').attr('value',screen_name_twitter)
+            $.ajax({
+                type:"POST",
+                url:"/favorite_twitter",
+                data:{
+                    'session_id': session,
+                    'access_token_twitter':$('input#access_token_twitter').val()
+                }
+            }).done(function(list){
+                $('#screen_name').attr('value',list.screen_name)
+                var replace_url = '/#.'+list.random_children
+                console.log(replace_url)
+                window.history.replaceState({},'test',replace_url)
+
+            })
+
+        }
+        else
+        {
+            window.location.href = targetURL
+        }
+    };
+
+    function openURLFacebook(targetURL){
+       // var session = readCookie('beaker.session.id');
+        if($('input#access_token_facebook').val() != '')
+        {
+            $('#screen_name').attr('value',screen_name_facebook)
+            $.ajax({
+                type:"POST",
+                url:"/favorite_facebook",
+                data:{
+                    'session_id':session,
+                    'access_token_facebook':$('input#access_token_facebook').val()
+                }
+            }).done(function(list){
+                $('#screen_name').attr('value', list.screen_name)
+                var replace_url = '/#.'+list.random_children
+                console.log(replace_url)
+                window.history.replaceState({},'test',replace_url)
+            })
+
+
+        }
+        else
+        {
+            window.location.href = targetURL
+        }
+    };
+
+
+
+    function openURLKakao(targetURL){
+        //var session = readCookie('beaker.session.id');
+
+        if($('input#access_token_kakao').val() != '')
+        {
+            $('#screen_name').attr('value',screen_name_kakao)
+            $.ajax({
+                type:"POST",
+                url:"/favorite_kakao",
+                data:{
+                    'session_id':session,
+                    'access_token_kakao':$('input#access_token_kakao').val()
+                }
+            }).done(function(list){
+                $('#screen_name').attr('value',list.screen_name)
+                var replace_url = '/#.'+list.random_children
+                console.log(replace_url)
+                window.history.replaceState({},'test',replace_url)
+            })
+
+
+        }
+
+        else
+        {
+            window.location.href = targetURL
+        }
+
+    };
+
+
+
+    function uploadOpinion(){
+     //   var beaker = readCookie('beaker.session.id');
+        var refer_rslt = "http://news.jtbc.joins.com/article/article.aspx?news_id=NB11073469";
+        var opinion  = $('textarea#opinion').val();
+        var access_token_twitter = $('input#access_token_twitter').val();
+        var access_token_secret_twitter = $('input#access_token_secret_twitter').val();
+        var access_token_facebook = $('input#access_token_facebook').val();
+        var access_token_kakao = $('input#access_token_kakao').val();
+
+        if($("input:checkbox[name='sns_twitter']").is(":checked")==true) {
+            $.ajax({
+                type: "GET",
+                url: "/upload_opinion_twitter",
+                data: {
+                    'opinion_twitter': opinion,
+                    'real_url_twitter': refer_rslt,
+                    'beaker_twitter': session,
+                    'access_token_twitter': access_token_twitter,
+                    'access_token_secret_twitter': access_token_secret_twitter,
+                    'referer' : referer
+                }
+            }).done(function (list) {
+                alert("success twitter_upload")
+                var replace_url = '/#.'+list.random_children
+                console.log(replace_url)
+                window.history.replaceState({},'test',replace_url)
+            })
+        }
+
+        if($("input:checkbox[name='sns_facebook']").is(":checked")==true) {
+            $.ajax({
+                type: "GET",
+                url: "/upload_opinion_facebook",
+                data: {
+                    'opinion_facebook': opinion,
+                    'real_url_facebook': refer_rslt,
+                    'beaker_facebook': session,
+                    'access_token_facebook': access_token_facebook,
+                    'referer' : referer
+                }
+            }).done(function (list) {
+                alert("success facebook_upload")
+                var replace_url = '/#.'+list.random_children
+                console.log(replace_url)
+                window.history.replaceState({},'test',replace_url)
+            })
+
+        }
+
+        if($("input:checkbox[name='sns_kakao']").is(":checked")==true) {
+            $.ajax({
+                type: "GET",
+                url: "/upload_opinion_kakao",
+                data: {
+                    'opinion_kakao': opinion,
+                    'real_url_kakao': refer_rslt,
+                    'beaker_kakao': session,
+                    'access_token_kakao': access_token_kakao,
+                    'referer' : referer
+                }
+            }).done(function (list) {
+                alert("success kakao_upload")
+                var replace_url = '/#.'+list.random_children
+                console.log(replace_url)
+                window.history.replaceState({},'test',replace_url)
+            })
+
+        }
+    };
+
+    function logout(){
+        $('#screen_name').attr('value','')
+        $('input#access_token_twitter').attr('value','')
+        $('input#access_token_secret_twitter').attr('value','')
+        $('input#access_token_facebook').attr('value','')
+        $('input#access_token_kakao').attr('value','')
+    }
+    function readCookie(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0;i < ca.length;i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        }
+        console.log('here stop!!!!')
+        return null;
+    }
+
+
+</script>
+
+<body onload="init()">
+
+
+    <input type = "checkbox" name ="sns_twitter" class="sns_type" value="sns_twitter">
+   <a class="twitter_oauth" id="twitter_oauth"
+      href="#" onclick="openURLTwitter('/twitter')">twitter</a>
+
+<br>
+    <input type = "checkbox" name ="sns_facebook" class="sns_type" value="sns_facebook">
+    <a class="facebook_oauth" id = "facebook_oauth"
+       href="#" onclick="openURLFacebook('/facebook')">facebook</a>
+<br>
+    <input type = "checkbox" name = "sns_kakao"class="sns_type" value="sns_kakao">
+    <a class="kakao_oauth" id = "kakao_oauth"
+       href = "#" onclick ="openURLKakao('/kakao')">kakao</a>
+
+
+<div class="screen_name_class">
+    <input type = "text" name ="screen_name" id="screen_name" value="">
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+    <input type = "hidden" name ="access_token_twitter" id="access_token_twitter" value="">
+    <input type = "hidden" name ="access_token_secret_twitter" id="access_token_secret_twitter" value="">
+    <input type = "hidden" name ="access_token_facebook" id ="access_token_facebook" value="">
+    <input type = "hidden" name ="access_token_kakao" id ="access_token_kakao" value="">
+
+
+<br>
+    <textarea rows="20" cols="30" name="opinion" id="opinion" value="비방이나 욕설은 삭제될 수 있습니다."></textarea>
+<br>
+
+    <a href="#" onclick="uploadOpinion()">보내기</a>
+    <a href="#" onclick="logout()">로그아웃</a>
+    <a href="/draw_json">이미지 시각화 보기</a>
+
+</body>
+</html>
